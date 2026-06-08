@@ -16,6 +16,21 @@ http://localhost:4174/
 
 Friends on the same Wi-Fi can join using the network URL printed by the server.
 
+## Online multiplayer
+
+GitHub Pages by itself cannot run Packlet multiplayer because chat, trades, bazaar, and shared progress need `server.js`.
+
+To play online with friends, deploy this repo to a Node host such as Render, Railway, Replit, Fly.io, or Glitch.
+
+Use:
+
+```text
+Build command: npm install
+Start command: npm start
+```
+
+After it deploys, share the hosted URL with your friends. Everyone using that hosted URL will share the same Packlet world.
+
 ## Notes
 
 - The shared game world is saved in `work/packlet-state.json`.

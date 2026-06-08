@@ -1,0 +1,1712 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Packlet</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b10;
+      --panel: #111620;
+      --panel-2: #171e2b;
+      --line: #263142;
+      --text: #eef4ff;
+      --muted: #9ca9bd;
+      --accent: #21d19f;
+      --accent-2: #5aa7ff;
+      --warn: #ffcc66;
+      --bad: #ff5e73;
+      --good: #4ee078;
+      --shadow: rgba(0, 0, 0, .35);
+      --radius: 8px;
+      font-family: "Avenir Next", "Trebuchet MS", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(33, 209, 159, .12), transparent 28rem),
+        radial-gradient(circle at top right, rgba(90, 167, 255, .13), transparent 26rem),
+        var(--bg);
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: #1b2533;
+      color: var(--text);
+      border-radius: 7px;
+      min-height: 38px;
+      padding: 0 12px;
+      cursor: pointer;
+      transition: transform .14s ease, border-color .14s ease, background .14s ease;
+    }
+
+    button:hover { border-color: #3e5069; background: #222e40; }
+    button:active { transform: translateY(1px); }
+    button.primary { background: linear-gradient(135deg, #1fbf91, #327fe7); border-color: transparent; color: #06100d; font-weight: 800; }
+    button.ghost { background: transparent; }
+    button.danger { background: #381923; border-color: #713044; color: #ffd7de; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    input, select, textarea {
+      width: 100%;
+      color: var(--text);
+      background: #0c1119;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    textarea { min-height: 76px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent-2); }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 238px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      border-right: 1px solid var(--line);
+      background: rgba(9, 12, 18, .86);
+      backdrop-filter: blur(14px);
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #21d19f, #5aa7ff);
+      box-shadow: 0 14px 35px var(--shadow);
+      color: #05110d;
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .brand h1 { margin: 0; font-size: 24px; line-height: 1; font-weight: 900; }
+    .brand span { color: var(--muted); font-size: 12px; }
+
+    .userbox, .authbox {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .pillrow { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: #0c1119;
+      color: var(--muted);
+      font-size: 12px;
+      min-width: 0;
+    }
+
+    .tabs {
+      display: grid;
+      gap: 7px;
+    }
+
+    .tab {
+      width: 100%;
+      justify-content: flex-start;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+    }
+
+    .tab.active {
+      color: var(--text);
+      background: #172030;
+      border-color: var(--line);
+    }
+
+    main {
+      padding: 26px;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .topbar h2 {
+      margin: 0 0 6px;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .topbar p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 820px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 14px;
+    }
+
+    .widegrid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(17, 22, 32, .92);
+      border-radius: var(--radius);
+      box-shadow: 0 16px 50px rgba(0, 0, 0, .2);
+      overflow: hidden;
+    }
+
+    .card.pad { padding: 14px; }
+    .card h3 { margin: 0 0 10px; font-size: 17px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+    .hidden { display: none !important; }
+    .row { display: flex; align-items: center; gap: 9px; }
+    .row.wrap { flex-wrap: wrap; }
+    .row.between { justify-content: space-between; }
+    .stack { display: grid; gap: 10px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .pack {
+      display: grid;
+      grid-template-rows: 150px auto;
+      min-height: 285px;
+    }
+
+    .pack-art {
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--c1), var(--c2));
+    }
+
+    .pack-art::before {
+      content: "";
+      position: absolute;
+      inset: -60px;
+      background:
+        repeating-linear-gradient(45deg, rgba(255,255,255,.14) 0 12px, transparent 12px 26px);
+      animation: drift 12s linear infinite;
+    }
+
+    .pack-icon {
+      position: relative;
+      width: 92px;
+      height: 92px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: rgba(8, 10, 15, .58);
+      border: 1px solid rgba(255,255,255,.25);
+      font-size: 52px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.32);
+    }
+
+    @keyframes drift {
+      to { transform: translate3d(60px, 60px, 0); }
+    }
+
+    .blook {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      min-height: 72px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #0d121b;
+      padding: 10px;
+    }
+
+    .blookface {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      font-size: 31px;
+      background: linear-gradient(135deg, var(--r1), var(--r2));
+      color: #06100d;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .blook.golden-apple .blookface {
+      color: #4b3300;
+      background:
+        radial-gradient(circle at 35% 25%, rgba(255,255,255,.95), transparent 18px),
+        linear-gradient(135deg, #fff4a8, #f6c32d 54%, #9d6a00);
+      animation: goldenGlow 1.8s ease-in-out infinite;
+    }
+
+    .blook.golden-apple .blookface::before,
+    .blook.golden-apple .blookface::after {
+      content: "";
+      position: absolute;
+      inset: -30%;
+      background:
+        radial-gradient(circle at 30% 80%, rgba(255, 127, 232, .32), transparent 22px),
+        radial-gradient(circle at 65% 90%, rgba(172, 92, 255, .28), transparent 24px);
+      animation: faintRise 3.2s linear infinite;
+      pointer-events: none;
+    }
+
+    .blook.golden-apple .blookface::after {
+      animation-delay: -1.6s;
+      opacity: .65;
+    }
+
+    @keyframes goldenGlow {
+      0%, 100% { box-shadow: 0 0 14px rgba(255, 213, 79, .45), inset 0 0 0 1px rgba(255,255,255,.42); }
+      50% { box-shadow: 0 0 28px rgba(255, 225, 97, .88), inset 0 0 18px rgba(255,255,255,.3); }
+    }
+
+    @keyframes faintRise {
+      from { transform: translateY(28px) rotate(0deg); }
+      to { transform: translateY(-28px) rotate(12deg); }
+    }
+
+    .blook strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+    .rarity { font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .rarity.uncommon { color: #71e094; }
+    .rarity.rare { color: #6fb9ff; }
+    .rarity.epic { color: #c88cff; }
+    .rarity.legendary { color: #ffd36b; }
+    .rarity.chroma { color: #70fff4; }
+    .rarity.supreme { color: #ff89cf; }
+    .rarity.mythic { color: #ff6f61; }
+
+    .chatlog, .tradelog {
+      height: 430px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px;
+      background: #090d14;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .message {
+      padding: 9px 10px;
+      border-radius: 8px;
+      background: #121925;
+      border: 1px solid #1e2a3b;
+      overflow-wrap: anywhere;
+    }
+
+    .message .name { font-weight: 800; }
+    .message .admin { color: #ff6f61; font-size: 11px; margin-left: 5px; }
+
+    .statgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    .stat span { color: var(--muted); display: block; font-size: 12px; }
+    .stat strong { display: block; font-size: 28px; margin-top: 4px; }
+
+    .wheel-wrap {
+      display: grid;
+      place-items: center;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .wheel {
+      position: relative;
+      width: min(72vw, 340px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: conic-gradient(
+        #21d19f 0 51.42deg,
+        #5aa7ff 51.42deg 102.84deg,
+        #c88cff 102.84deg 154.26deg,
+        #ffd36b 154.26deg 205.68deg,
+        #ff89cf 205.68deg 257.1deg,
+        #ff6f61 257.1deg 308.52deg,
+        #70fff4 308.52deg 360deg
+      );
+      border: 10px solid #121925;
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+      transition: transform 3.2s cubic-bezier(.16, .84, .22, 1);
+    }
+
+    .wheel::after {
+      content: "";
+      position: absolute;
+      inset: 30%;
+      border-radius: 50%;
+      background: #0d121b;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .slice-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: rotate(var(--a)) translateY(-138px) rotate(calc(-1 * var(--a)));
+      transform-origin: center;
+      color: #05070a;
+      font-weight: 900;
+      font-size: 13px;
+      z-index: 2;
+    }
+
+    .pointer {
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-top: 28px solid var(--text);
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,.4));
+      margin-bottom: -24px;
+      z-index: 3;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,.72);
+      z-index: 20;
+      padding: 18px;
+    }
+
+    .modal-inner {
+      width: min(560px, 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #101722;
+      padding: 18px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.5);
+      text-align: center;
+    }
+
+    .opening-stage {
+      min-height: 300px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .opening-pack {
+      width: 170px;
+      height: 170px;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      font-size: 88px;
+      background: linear-gradient(135deg, var(--c1), var(--c2));
+      animation: packShake 1.5s ease-in-out infinite;
+      box-shadow: 0 22px 70px rgba(0,0,0,.42);
+    }
+
+    .opening-pack.reveal {
+      animation: popReveal .8s ease forwards;
+    }
+
+    @keyframes packShake {
+      0%, 100% { transform: rotate(-5deg) scale(1); }
+      50% { transform: rotate(5deg) scale(1.05); }
+    }
+
+    @keyframes popReveal {
+      0% { transform: scale(1) rotate(0deg); opacity: 1; }
+      60% { transform: scale(1.28) rotate(16deg); opacity: .9; }
+      100% { transform: scale(.2) rotate(80deg); opacity: 0; }
+    }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: min(420px, calc(100vw - 32px));
+      display: grid;
+      gap: 8px;
+      z-index: 30;
+    }
+
+    .notice {
+      border: 1px solid var(--line);
+      background: #121925;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 11px 12px;
+      box-shadow: 0 14px 45px rgba(0,0,0,.35);
+    }
+
+    .server-note {
+      border: 1px solid #244c42;
+      background: #0d1c1a;
+      border-radius: var(--radius);
+      padding: 10px;
+      color: #9debd7;
+      font-size: 12px;
+    }
+
+    .inventory-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .compact-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .compact-table th, .compact-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .compact-table th { color: var(--muted); font-weight: 700; }
+
+    .odds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 8px;
+    }
+
+    .odds-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #0d121b;
+      min-width: 0;
+    }
+
+    .odds-item strong { white-space: nowrap; }
+
+    .boost-banner {
+      border: 1px solid #386a5d;
+      background: linear-gradient(135deg, rgba(33, 209, 159, .18), rgba(90, 167, 255, .13));
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      color: #bdfbea;
+      font-weight: 800;
+    }
+
+    @media (max-width: 860px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+      .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 16px; }
+      .widegrid, .split { grid-template-columns: 1fr; }
+      .topbar { display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">P</div>
+        <div>
+          <h1>Packlet</h1>
+          <span>bazaar + packs + chat</span>
+        </div>
+      </div>
+
+      <section id="authBox" class="authbox">
+        <div class="row">
+          <button id="loginMode" class="primary" type="button">Login</button>
+          <button id="registerMode" type="button">Register</button>
+        </div>
+        <label>Email<input id="emailInput" autocomplete="username" value="admin@packlet.local"></label>
+        <label>Password<input id="passwordInput" autocomplete="current-password" type="password" value="packlet-admin"></label>
+        <label id="nameLabel" class="hidden">Name<input id="nameInput" maxlength="18" placeholder="Your name"></label>
+        <button id="authSubmit" class="primary" type="button">Enter Packlet</button>
+      </section>
+
+      <section id="userBox" class="userbox hidden"></section>
+
+      <nav class="tabs" id="tabs"></nav>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div>
+          <h2 id="viewTitle">Market</h2>
+          <p id="viewSubtitle">Open packs, buy boosters, and chase higher rarity blooks.</p>
+        </div>
+        <div class="pillrow" id="quickStats"></div>
+      </div>
+      <section id="view"></section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden"></div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const STORE_KEY = "packlet_state_v2";
+    const CHANNEL = "packlet_live_v1";
+    const SERVER_MODE = location.protocol.startsWith("http");
+    const channel = "BroadcastChannel" in window ? new BroadcastChannel(CHANNEL) : null;
+    const rarityValues = { uncommon: 5, rare: 20, epic: 75, legendary: 250, chroma: 400, supreme: 800, mythic: 5000 };
+    const rarityColors = {
+      uncommon: ["#71e094", "#214d35"],
+      rare: ["#6fb9ff", "#203b65"],
+      epic: ["#c88cff", "#4b2868"],
+      legendary: ["#ffd36b", "#624a18"],
+      chroma: ["#70fff4", "#3258ff"],
+      supreme: ["#ff89cf", "#7c264c"],
+      mythic: ["#ff6f61", "#28151a"]
+    };
+    const plusPaints = ["red","orange","yellow","lightgreen","green","blue","cyan","purple","pink","brown","black","grey"];
+    const wheelRewards = [1000, 1250, 1500, 1750, 2000, 2500, 3000];
+    const views = [
+      ["stats", "Stats", "Track tokens, messages, pack opens, levels, and unlocks."],
+      ["market", "Market", "Open packs, buy boosters, and chase higher rarity blooks."],
+      ["inventory", "Blooks", "Manage your collection, sell blooks, and clear duplicates."],
+      ["bazaar", "Bazaar", "List blooks for other players or grab something rare."],
+      ["chat", "Live Chat", "Chat across open Packlet tabs and earn 1-5 tokens per message."],
+      ["trade", "Trading", "Trade up to four blooks and any amount of tokens with private chat."],
+      ["clans", "Clans", "Apply to clans, manage members, and color clan tags with Plus."],
+      ["wheel", "Daily Wheel", "Spin once a day for an exact visible token prize."],
+      ["plus", "Plus", "Unlock clan creation, colors, badges, name changes, and unlimited listings."],
+      ["admin", "Admin", "Moderation, token tools, plus management, blook grants, and trade history."]
+    ];
+
+    const packs = [
+      { id: "fruit", name: "Fruit Pack", icon: "🍓", c1: "#ff5e73", c2: "#21d19f", blooks: [
+        { name: "Apple", icon: "🍎", rarity: "uncommon", chance: 15.2 },
+        { name: "Orange", icon: "🍊", rarity: "uncommon", chance: 15 },
+        { name: "Lemon", icon: "🍋", rarity: "uncommon", chance: 15 },
+        { name: "Lime", icon: "🟩", rarity: "uncommon", chance: 15 },
+        { name: "Grape", icon: "🍇", rarity: "uncommon", chance: 15 },
+        { name: "Strawberry", icon: "🍓", rarity: "rare", chance: 6.5 },
+        { name: "Raspberry", icon: "🔴", rarity: "rare", chance: 6.5 },
+        { name: "Cherry", icon: "🍒", rarity: "rare", chance: 6.5 },
+        { name: "Watermelon", icon: "🍉", rarity: "epic", chance: 5, boosted: true },
+        { name: "Dragon Fruit", icon: "🐉", rarity: "epic", chance: 5, boosted: true },
+        { name: "Starfruit", icon: "⭐", rarity: "legendary", chance: 0.6, boosted: true },
+        { name: "Green Apple", icon: "🍏", rarity: "chroma", chance: 0.1, boosted: true },
+        { name: "Blue Raspberry", icon: "🫐", rarity: "supreme", chance: 0.02, boosted: true },
+        { name: "Golden Apple", icon: "🍎", rarity: "mythic", chance: 0.005, boosted: true }
+      ] }
+    ];
+
+    let state = loadState();
+    let sessionEmail = localStorage.getItem("packlet_session_email") || "cchen3@nastudents.org";
+    let currentView = "stats";
+    let authMode = "login";
+    let spinRotation = 0;
+
+    function seedState() {
+      const adminId = id();
+      return {
+        users: [{
+          id: adminId,
+          email: "admin@packlet.local",
+          password: "packlet-admin",
+          name: "Connor",
+          tokens: 250000,
+          totalTokens: 250000,
+          messages: 0,
+          packOpens: 0,
+          pings: 0,
+          xp: 0,
+          muted: false,
+          banned: false,
+          plus: true,
+          admin: true,
+          badge: "PLUS",
+          nameColor: "#21d19f",
+          textColor: "#eef4ff",
+          paint: "rainbow",
+          inventory: [],
+          boosterUntil: 0,
+          lastWheel: ""
+        }],
+        chats: [],
+        listings: [],
+        trades: [],
+        tradeHistory: [],
+        clans: [],
+        bans: [],
+        logs: []
+      };
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORE_KEY);
+      if (!saved) return seedState();
+      try {
+        const parsed = JSON.parse(saved);
+        if (!parsed.users?.length) return seedState();
+        return parsed;
+      } catch {
+        return seedState();
+      }
+    }
+
+    function saveState(broadcast = true) {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      if (broadcast && channel) channel.postMessage({ type: "state", state });
+      if (broadcast && SERVER_MODE) {
+        fetch("/api/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(state)
+        }).catch(() => toast("Server save failed. Is Packlet server still running?"));
+      }
+    }
+
+    async function loadRemoteState() {
+      if (!SERVER_MODE) return;
+      try {
+        const response = await fetch("/api/state");
+        const remote = await response.json();
+        if (remote?.users?.length) {
+          state = remote;
+          localStorage.setItem(STORE_KEY, JSON.stringify(state));
+        } else {
+          await fetch("/api/state", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(state)
+          });
+        }
+        render();
+        startServerEvents();
+      } catch {
+        toast("Could not connect to the shared Packlet server.");
+      }
+    }
+
+    function startServerEvents() {
+      if (!SERVER_MODE || !("EventSource" in window)) return;
+      const events = new EventSource("/api/events");
+      events.onmessage = event => {
+        try {
+          const remote = JSON.parse(event.data);
+          if (remote?.users?.length) {
+            state = remote;
+            localStorage.setItem(STORE_KEY, JSON.stringify(state));
+            render();
+          }
+        } catch {}
+      };
+    }
+
+    if (channel) {
+      channel.onmessage = event => {
+        if (event.data?.type === "state") {
+          state = event.data.state;
+          render();
+        }
+      };
+    }
+
+    function id() {
+      return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    }
+
+    function todayKey() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function currentUser() {
+      return state.users.find(u => u.email === sessionEmail) || null;
+    }
+
+    function isPlus(user) {
+      return !!(user?.plus || user?.admin);
+    }
+
+    function clanFor(userId) {
+      return state.clans.find(c => c.members.includes(userId)) || null;
+    }
+
+    function levelFor(user) {
+      return Math.max(1, Math.floor((user.xp || 0) / 100) + 1);
+    }
+
+    function addXp(user, amount) {
+      user.xp = (user.xp || 0) + amount;
+    }
+
+    function addTokens(user, amount) {
+      user.tokens += amount;
+      user.totalTokens = (user.totalTokens || 0) + Math.max(0, amount);
+    }
+
+    function spendTokens(user, amount) {
+      if (user.tokens < amount) return false;
+      user.tokens -= amount;
+      return true;
+    }
+
+    function toast(message) {
+      const wrap = document.getElementById("toast");
+      const item = document.createElement("div");
+      item.className = "notice";
+      item.textContent = message;
+      wrap.appendChild(item);
+      setTimeout(() => item.remove(), 3200);
+    }
+
+    function cssRarity(rarity) {
+      const [r1, r2] = rarityColors[rarity] || rarityColors.uncommon;
+      return `--r1:${r1};--r2:${r2}`;
+    }
+
+    function itemClass(item) {
+      return String(item.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    }
+
+    function blookCard(item, extra = "") {
+      return `<div class="blook ${itemClass(item)}" style="${cssRarity(item.rarity)}">
+        <div class="blookface">${item.icon}</div>
+        <div style="min-width:0;flex:1">
+          <strong>${escapeHtml(item.name)}</strong>
+          <div class="rarity ${item.rarity}">${item.rarity}</div>
+          ${extra}
+        </div>
+      </div>`;
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[ch]));
+    }
+
+    function money(n) {
+      return Number(n || 0).toLocaleString();
+    }
+
+    function formatChance(value) {
+      return `${Number(value).toFixed(3).replace(/\.?0+$/, "")}%`;
+    }
+
+    function rollOdds(pack, boosted) {
+      const weighted = pack.blooks.map(item => ({ ...item, weight: item.chance * (boosted && item.boosted ? 2 : 1) }));
+      const total = weighted.reduce((sum, item) => sum + item.weight, 0);
+      return weighted.map(item => ({ ...item, rollChance: item.weight / total * 100 }));
+    }
+
+    function pickBlook(pack, user) {
+      const boosted = Date.now() < (user.boosterUntil || 0);
+      const pool = pack.blooks.map(item => ({ ...item, weight: item.chance * (boosted && item.boosted ? 2 : 1) }));
+      const total = pool.reduce((sum, item) => sum + item.weight, 0);
+      let roll = Math.random() * total;
+      return pool.find(item => (roll -= item.weight) <= 0) || pool[0];
+    }
+
+    function addBlook(user, item, source = "market") {
+      user.inventory.push({ ...item, uid: id(), source, openedAt: Date.now() });
+    }
+
+    function userById(userId) {
+      return state.users.find(u => u.id === userId);
+    }
+
+    function render() {
+      const user = currentUser();
+      document.getElementById("authBox").classList.toggle("hidden", !!user);
+      document.getElementById("userBox").classList.toggle("hidden", !user);
+      renderTabs(user);
+      if (!user) {
+        document.getElementById("viewTitle").textContent = "Packlet";
+        document.getElementById("viewSubtitle").textContent = "Login or register to enter the dark themed pack market.";
+        document.getElementById("quickStats").innerHTML = "";
+        document.getElementById("view").innerHTML = `<div class="card pad stack"><h3>Welcome</h3><p class="muted">Use the seeded admin account or make a new player account. This prototype saves everything in this browser.</p></div>`;
+        return;
+      }
+      if (user.banned) {
+        document.getElementById("view").innerHTML = `<div class="card pad"><h3>Account banned</h3><p class="muted">An admin banned this account in the local prototype.</p></div>`;
+        return;
+      }
+      if (currentView === "admin" && !user.admin) currentView = "market";
+      const view = views.find(v => v[0] === currentView);
+      document.getElementById("viewTitle").textContent = view[1];
+      document.getElementById("viewSubtitle").textContent = view[2];
+      renderUserBox(user);
+      renderQuickStats(user);
+      document.getElementById("view").innerHTML = renderView(currentView, user);
+      bindView(currentView, user);
+    }
+
+    function renderTabs(user) {
+      document.getElementById("tabs").innerHTML = views
+        .filter(v => v[0] !== "admin" || user?.admin)
+        .map(v => `<button class="tab ${currentView === v[0] ? "active" : ""}" data-view="${v[0]}" type="button">${iconFor(v[0])} ${v[1]}</button>`)
+        .join("");
+      document.querySelectorAll("[data-view]").forEach(btn => {
+        btn.onclick = () => {
+          currentView = btn.dataset.view;
+          render();
+        };
+      });
+    }
+
+    function iconFor(view) {
+      return ({ market:"🛍️", inventory:"🎒", bazaar:"🏷️", chat:"💬", trade:"🤝", clans:"🏰", wheel:"🎡", stats:"📊", plus:"➕", admin:"🛠️" })[view] || "•";
+    }
+
+    function renderUserBox(user) {
+      const clan = clanFor(user.id);
+      const booster = Math.max(0, user.boosterUntil - Date.now());
+      document.getElementById("userBox").innerHTML = `
+        <div class="row between">
+          <strong style="color:${escapeHtml(user.nameColor || "#eef4ff")}">${escapeHtml(user.name)}</strong>
+          <button id="logoutBtn" class="ghost" type="button">Logout</button>
+        </div>
+        <div class="pillrow">
+          <span class="pill">${money(user.tokens)} tokens</span>
+          <span class="pill">Lvl ${levelFor(user)}</span>
+          ${isPlus(user) ? `<span class="pill">Plus</span>` : ""}
+          ${user.admin ? `<span class="pill">Admin</span>` : ""}
+          ${clan ? `<span class="pill">[${escapeHtml(clan.name)}]</span>` : ""}
+        </div>
+        <div class="small muted">${booster > 0 ? `${escapeHtml(user.name)} is boosting: ${Math.ceil(booster / 60000)} min left` : "No active booster"}</div>
+        ${SERVER_MODE ? `<div class="server-note">Shared server mode is on. Friends who open this server link use the same Packlet world.</div>` : `<div class="server-note">Open with the Packlet server to let friends join the same world.</div>`}
+      `;
+      document.getElementById("logoutBtn").onclick = () => {
+        localStorage.removeItem("packlet_session_email");
+        sessionEmail = "";
+        render();
+      };
+    }
+
+    function renderQuickStats(user) {
+      document.getElementById("quickStats").innerHTML = `
+        <span class="pill">${money(user.tokens)} tokens</span>
+        <span class="pill">${user.inventory.length} blooks</span>
+        <span class="pill">${user.messages || 0} msgs</span>
+        <span class="pill">${user.packOpens || 0} opens</span>
+      `;
+    }
+
+    function renderView(view, user) {
+      if (view === "market") return renderMarket(user);
+      if (view === "inventory") return renderInventory(user);
+      if (view === "bazaar") return renderBazaar(user);
+      if (view === "chat") return renderChat(user);
+      if (view === "trade") return renderTrade(user);
+      if (view === "clans") return renderClans(user);
+      if (view === "wheel") return renderWheel(user);
+      if (view === "stats") return renderStats(user);
+      if (view === "plus") return renderPlus(user);
+      if (view === "admin") return renderAdmin(user);
+      return "";
+    }
+
+    function renderMarket(user) {
+      const openPacks = packs.filter(p => !p.adminOnly || user.admin);
+      const boosted = Date.now() < (user.boosterUntil || 0);
+      return `
+        <div class="widegrid">
+          <div class="grid">
+            ${openPacks.map(pack => `<article class="card pack" style="--c1:${pack.c1};--c2:${pack.c2}">
+              <div class="pack-art"><div class="pack-icon">${pack.icon}</div></div>
+              <div class="pad stack">
+                <div>
+                  <h3>${pack.name}</h3>
+                  <div class="small muted">25 tokens each. Fruit-only for now. No common blooks.</div>
+                </div>
+                ${boosted ? `<div class="boost-banner">${escapeHtml(user.name)} is boosting Watermelon and rarer by 2x.</div>` : ""}
+                <div class="pillrow">${[...new Set(pack.blooks.map(b => b.rarity))].map(r => `<span class="pill rarity ${r}">${r}</span>`).join("")}</div>
+                <div class="odds-grid">
+                  ${rollOdds(pack, boosted).map(item => `<div class="odds-item ${itemClass(item)}">
+                    <span>${item.icon} ${escapeHtml(item.name)}</span>
+                    <strong>${boosted ? formatChance(item.rollChance) : formatChance(item.chance)}</strong>
+                  </div>`).join("")}
+                </div>
+                <div class="small muted">${boosted ? "Showing boosted roll odds after 2x high-tier weights." : "Showing the base Fruit Pack chances you gave."}</div>
+                <div class="row wrap">
+                  <button class="primary open-pack" data-pack="${pack.id}" data-count="1" type="button">Open 1</button>
+                  <button class="open-pack" data-pack="${pack.id}" data-count="10" type="button">Open 10</button>
+                  <button class="open-pack" data-pack="${pack.id}" data-count="100" type="button">Open 100</button>
+                  <button class="open-pack" data-pack="${pack.id}" data-count="max" type="button">Max</button>
+                </div>
+              </div>
+            </article>`).join("")}
+          </div>
+          <aside class="card pad stack">
+            <h3>Boosters</h3>
+            <p class="muted">Boost epics and above by 2x while active.</p>
+            <button class="buy-booster primary" data-hours="1" data-cost="10000" type="button">Buy 1 hr booster - 10,000</button>
+            <button class="buy-booster" data-hours="3" data-cost="15000" type="button">Buy 3 hr booster - 15,000</button>
+            <h3>Direct Sell Values</h3>
+            <div class="stack">${Object.entries(rarityValues).map(([r,v]) => `<div class="row between"><span class="rarity ${r}">${r}</span><strong>${money(v)}</strong></div>`).join("")}</div>
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderInventory(user) {
+      const grouped = Object.values(user.inventory.reduce((map, item) => {
+        const key = item.name + item.rarity;
+        map[key] ||= { ...item, count: 0, ids: [] };
+        map[key].count++;
+        map[key].ids.push(item.uid);
+        return map;
+      }, {})).sort((a, b) => rarityValues[b.rarity] - rarityValues[a.rarity] || a.name.localeCompare(b.name));
+      return `
+        <div class="card pad stack">
+          <div class="row between wrap">
+            <h3>Your Blooks</h3>
+            <div class="row wrap">
+              <button id="sellDupes" class="primary" type="button">Sell all dupes</button>
+              <button id="sellAll" class="danger" type="button">Sell all</button>
+            </div>
+          </div>
+          <div class="inventory-list">
+            ${grouped.length ? grouped.map(item => blookCard(item, `
+              <div class="small muted">Owned: ${item.count} · Sell: ${money(rarityValues[item.rarity])}</div>
+              <div class="row wrap" style="margin-top:8px">
+                <button class="sell-one" data-id="${item.ids[0]}" type="button">Sell one</button>
+                <button class="list-one" data-id="${item.ids[0]}" type="button">List</button>
+              </div>
+            `)).join("") : `<p class="muted">No blooks yet. Open some packs in the market.</p>`}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBazaar(user) {
+      const activeListings = state.listings.filter(l => !l.sold);
+      const myCount = activeListings.filter(l => l.sellerId === user.id).length;
+      return `
+        <div class="widegrid">
+          <section class="card pad stack">
+            <div class="row between wrap">
+              <h3>Live Listings</h3>
+              <span class="pill">Your active listings: ${myCount}${isPlus(user) ? " / unlimited" : " / 25"}</span>
+            </div>
+            <div class="inventory-list">
+              ${activeListings.length ? activeListings.map(l => {
+                const seller = userById(l.sellerId);
+                return blookCard(l.item, `
+                  <div class="small muted">Seller: ${escapeHtml(seller?.name || "Unknown")} · Price: ${money(l.price)}</div>
+                  <div class="row wrap" style="margin-top:8px">
+                    ${l.sellerId === user.id ? `<button class="cancel-listing" data-id="${l.id}" type="button">Cancel</button>` : `<button class="buy-listing primary" data-id="${l.id}" type="button">Buy</button>`}
+                  </div>
+                `);
+              }).join("") : `<p class="muted">No listings yet.</p>`}
+            </div>
+          </section>
+          <aside class="card pad stack">
+            <h3>List From Inventory</h3>
+            <label>Blook<select id="bazaarBlook">${user.inventory.map(i => `<option value="${i.uid}">${escapeHtml(i.name)} (${i.rarity})</option>`).join("")}</select></label>
+            <label>Price<input id="bazaarPrice" type="number" min="1" value="100"></label>
+            <button id="createListing" class="primary" type="button">Create listing</button>
+            <p class="muted small">Normal players can list 25 items. Plus players can list any amount.</p>
+          </aside>
+        </div>
+      `;
+    }
+
+    function chatName(user) {
+      const clan = clanFor(user.id);
+      const clanTag = clan ? `<span style="${clan.paint === "rainbow" ? "background:linear-gradient(90deg,#ff6f61,#ffd36b,#21d19f,#5aa7ff,#c88cff);-webkit-background-clip:text;color:transparent" : `color:${escapeHtml(clan.paint || "#9ca9bd")}`}">[${escapeHtml(clan.name)}]</span>` : "";
+      return `<span class="name" style="color:${escapeHtml(user.nameColor || "#eef4ff")}">${escapeHtml(user.name)}</span> ${clanTag} ${user.admin ? `<span class="admin">ADMIN</span>` : ""} ${isPlus(user) ? `<span class="pill">PLUS</span>` : ""}`;
+    }
+
+    function renderChat(user) {
+      return `
+        <div class="widegrid">
+          <section class="card pad stack">
+            <div id="chatLog" class="chatlog">
+              ${state.chats.slice(-120).map(m => {
+                const author = userById(m.userId);
+                if (m.system) return `<div class="message"><strong>Packlet</strong> <span class="small muted">${new Date(m.time).toLocaleTimeString()}</span><div class="muted">${escapeHtml(m.text)}</div></div>`;
+                return `<div class="message"><div>${author ? chatName(author) : "Unknown"} <span class="small muted">${new Date(m.time).toLocaleTimeString()}</span></div><div style="color:${escapeHtml(author?.textColor || "#eef4ff")}">${escapeHtml(m.text)}</div></div>`;
+              }).join("")}
+            </div>
+            <div class="row">
+              <input id="chatInput" maxlength="240" placeholder="${user.muted ? "You are muted" : "Message Packlet..."}" ${user.muted ? "disabled" : ""}>
+              <button id="sendChat" class="primary" type="button" ${user.muted ? "disabled" : ""}>Send</button>
+            </div>
+          </section>
+          <aside class="card pad stack">
+            <h3>Chat Rewards</h3>
+            <p class="muted">Every sent message gives a random 1-5 tokens, adds chat XP, and pings mentioned players with @name.</p>
+            <div class="stat"><span>Messages sent</span><strong>${money(user.messages || 0)}</strong></div>
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderTrade(user) {
+      const others = state.users.filter(u => u.id !== user.id && !u.banned);
+      const trades = state.trades.filter(t => [t.fromId, t.toId].includes(user.id) && t.status === "open");
+      return `
+        <div class="widegrid">
+          <section class="card pad stack">
+            <h3>Open Trades</h3>
+            ${trades.length ? trades.map(t => {
+              const other = userById(t.fromId === user.id ? t.toId : t.fromId);
+              return `<div class="card pad stack">
+                <div class="row between"><strong>Trade with ${escapeHtml(other?.name || "Unknown")}</strong><span class="pill">${t.fromId === user.id ? "sent" : "received"}</span></div>
+                <div class="split">
+                  <div>${tradeSide(t.fromOffer, "Their offer", t.fromId === user.id ? "Your offer" : "Their offer")}</div>
+                  <div>${tradeSide(t.toOffer, "Your offer", t.fromId === user.id ? "Their offer" : "Your offer")}</div>
+                </div>
+                <div class="tradelog">${t.chat.map(m => `<div class="message"><strong>${escapeHtml(userById(m.userId)?.name || "Unknown")}:</strong> ${escapeHtml(m.text)}</div>`).join("")}</div>
+                ${t.toId === user.id ? `<div class="card pad stack">
+                  <h3>Your counter-offer</h3>
+                  <label>Blooks, up to 4<select class="counter-blooks" data-id="${t.id}" multiple size="5">${user.inventory.map(i => `<option value="${i.uid}" ${t.toOffer.items.some(item => item.uid === i.uid) ? "selected" : ""}>${escapeHtml(i.name)} (${i.rarity})</option>`).join("")}</select></label>
+                  <label>Tokens<input class="counter-tokens" data-id="${t.id}" type="number" min="0" value="${t.toOffer.tokens || 0}"></label>
+                  <button class="save-counter" data-id="${t.id}" type="button">Save counter-offer</button>
+                </div>` : ""}
+                <div class="row">
+                  <input class="trade-chat" data-id="${t.id}" placeholder="Private trade chat">
+                  <button class="send-trade-chat" data-id="${t.id}" type="button">Send</button>
+                  ${t.toId === user.id ? `<button class="accept-trade primary" data-id="${t.id}" type="button">Accept</button>` : ""}
+                  <button class="cancel-trade danger" data-id="${t.id}" type="button">Cancel</button>
+                </div>
+              </div>`;
+            }).join("") : `<p class="muted">No open trades yet.</p>`}
+          </section>
+          <aside class="card pad stack">
+            <h3>Start Trade</h3>
+            <label>Player<select id="tradePlayer">${others.map(u => `<option value="${u.id}">${escapeHtml(u.name)}</option>`).join("")}</select></label>
+            <label>Your blooks, up to 4<select id="tradeBlooks" multiple size="6">${user.inventory.map(i => `<option value="${i.uid}">${escapeHtml(i.name)} (${i.rarity})</option>`).join("")}</select></label>
+            <label>Tokens<input id="tradeTokens" type="number" min="0" value="0"></label>
+            <button id="startTrade" class="primary" type="button">Send trade</button>
+          </aside>
+        </div>
+      `;
+    }
+
+    function tradeSide(offer, fallback, title) {
+      return `<div class="stack"><h3>${title || fallback}</h3><div class="pill">Tokens: ${money(offer.tokens || 0)}</div>${offer.items.length ? offer.items.map(i => blookCard(i)).join("") : `<p class="muted">No blooks</p>`}</div>`;
+    }
+
+    function renderClans(user) {
+      const myClan = clanFor(user.id);
+      return `
+        <div class="widegrid">
+          <section class="card pad stack">
+            <h3>Clans</h3>
+            <div class="grid">
+              ${state.clans.length ? state.clans.map(c => {
+                const owner = userById(c.ownerId);
+                const isOwner = c.ownerId === user.id;
+                const applied = c.applications.includes(user.id);
+                return `<div class="card pad stack">
+                  <div class="row between"><strong style="color:${escapeHtml(c.paint || "#eef4ff")}">[${escapeHtml(c.name)}]</strong><span class="pill">Lvl ${Math.max(1, Math.floor((c.xp || 0)/250)+1)}</span></div>
+                  <div class="small muted">Owner: ${escapeHtml(owner?.name || "Unknown")} · Members: ${c.members.length}</div>
+                  ${myClan?.id === c.id ? `<span class="pill">You are in this clan</span>` : `<button class="apply-clan" data-id="${c.id}" type="button" ${applied ? "disabled" : ""}>${applied ? "Applied" : "Apply"}</button>`}
+                  ${isOwner ? `<div class="stack">
+                    <label>Clan color<select class="clan-paint" data-id="${c.id}">${(user.admin ? ["rainbow", ...plusPaints] : plusPaints).map(p => `<option ${c.paint === p ? "selected" : ""}>${p}</option>`).join("")}</select></label>
+                    <label>Transfer ownership<select class="transfer-clan" data-id="${c.id}">${c.members.filter(id => id !== user.id).map(id => `<option value="${id}">${escapeHtml(userById(id)?.name || "Unknown")}</option>`).join("")}</select></label>
+                    <button class="do-transfer" data-id="${c.id}" type="button">Transfer</button>
+                    <h3>Applications</h3>
+                    ${c.applications.length ? c.applications.map(id => `<div class="row between"><span>${escapeHtml(userById(id)?.name || "Unknown")}</span><button class="accept-clan" data-clan="${c.id}" data-user="${id}" type="button">Accept</button></div>`).join("") : `<p class="muted">No applications.</p>`}
+                  </div>` : ""}
+                </div>`;
+              }).join("") : `<p class="muted">No clans yet.</p>`}
+            </div>
+          </section>
+          <aside class="card pad stack">
+            <h3>Create Clan</h3>
+            ${isPlus(user) ? `
+              <label>Name<input id="clanName" maxlength="18" placeholder="Clan name"></label>
+              <label>Paint bucket<select id="clanPaint">${(user.admin ? ["rainbow", ...plusPaints] : plusPaints).map(p => `<option>${p}</option>`).join("")}</select></label>
+              <button id="createClan" class="primary" type="button">Create clan</button>
+            ` : `<p class="muted">You need Plus to create a clan. Anyone can apply to join one.</p>`}
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderWheel(user) {
+      const spun = user.lastWheel === todayKey();
+      return `
+        <div class="card wheel-wrap">
+          <div class="pointer"></div>
+          <div id="wheel" class="wheel" style="transform:rotate(${spinRotation}deg)">
+            ${wheelRewards.map((r, i) => `<span class="slice-label" style="--a:${i * 51.42 + 25.71}deg">${r}</span>`).join("")}
+          </div>
+          <button id="spinWheel" class="primary" type="button" ${spun ? "disabled" : ""}>${spun ? "Come back tomorrow" : "Spin daily wheel"}</button>
+          <div id="wheelResult" class="muted">${spun ? "Already spun today." : "The reward shown at the pointer is the reward you get."}</div>
+        </div>
+      `;
+    }
+
+    function renderStats(user) {
+      const unique = new Set(user.inventory.map(i => i.name)).size;
+      const clan = clanFor(user.id);
+      return `
+        <div class="statgrid">
+          ${[
+            ["Tokens", money(user.tokens)],
+            ["Total tokens earned", money(user.totalTokens || 0)],
+            ["Messages sent", money(user.messages || 0)],
+            ["Blooks unlocked", money(unique)],
+            ["Inventory size", money(user.inventory.length)],
+            ["Pack opens", money(user.packOpens || 0)],
+            ["Pings received", money(user.pings || 0)],
+            ["Level", levelFor(user)],
+            ["Clan", clan ? `[${escapeHtml(clan.name)}]` : "None"],
+            ["Plus", isPlus(user) ? "Yes" : "No"]
+          ].map(([label, value]) => `<div class="stat"><span>${label}</span><strong>${value}</strong></div>`).join("")}
+        </div>
+      `;
+    }
+
+    function renderPlus(user) {
+      return `
+        <div class="widegrid">
+          <section class="card pad stack">
+            <h3>Packlet Plus</h3>
+            <p class="muted">Plus costs 100,000 tokens. Admins automatically have Plus, but admin status is separate.</p>
+            <div class="grid">
+              ${["Plus-only blook", "Create clans", "Pick one clan paint bucket color", "Exclusive badge", "Change name", "Change chat text color", "Unlimited bazaar listings", "Open max packs with all tokens"].map(t => `<div class="stat"><span>Plus perk</span><strong style="font-size:18px">${t}</strong></div>`).join("")}
+            </div>
+            ${isPlus(user) ? `<span class="pill">Plus active</span>` : `<button id="buyPlus" class="primary" type="button">Buy Plus - 100,000 tokens</button>`}
+          </section>
+          <aside class="card pad stack">
+            <h3>Profile</h3>
+            ${isPlus(user) ? `
+              <label>Name<input id="profileName" maxlength="18" value="${escapeHtml(user.name)}"></label>
+              <label>Text color<input id="profileTextColor" type="color" value="${escapeHtml(user.textColor || "#eef4ff")}"></label>
+              <label>Name color<input id="profileNameColor" type="color" value="${escapeHtml(user.nameColor || "#eef4ff")}"></label>
+              <button id="saveProfile" class="primary" type="button">Save profile</button>
+            ` : `<p class="muted">Buy Plus to customize your name and chat colors.</p>`}
+          </aside>
+        </div>
+      `;
+    }
+
+    function renderAdmin(user) {
+      return `
+        <div class="widegrid">
+          <section class="card pad stack">
+            <h3>Players</h3>
+            <table class="compact-table">
+              <thead><tr><th>Name</th><th>Tokens</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>${state.users.map(u => `<tr>
+                <td>${escapeHtml(u.name)}<br><span class="small muted">${escapeHtml(u.email)}</span></td>
+                <td>${money(u.tokens)}</td>
+                <td>${u.admin ? "Admin " : ""}${isPlus(u) ? "Plus " : ""}${u.muted ? "Muted " : ""}${u.banned ? "Banned" : ""}</td>
+                <td><div class="row wrap">
+                  <button class="toggle-mute" data-id="${u.id}" type="button">${u.muted ? "Unmute" : "Mute"}</button>
+                  <button class="toggle-ban danger" data-id="${u.id}" type="button">${u.banned ? "Unban" : "Ban"}</button>
+                  <button class="toggle-plus" data-id="${u.id}" type="button">${u.plus ? "Remove Plus" : "Give Plus"}</button>
+                  <button class="toggle-admin" data-id="${u.id}" type="button">${u.admin ? "Remove Admin" : "Make Admin"}</button>
+                </div></td>
+              </tr>`).join("")}</tbody>
+            </table>
+          </section>
+          <aside class="card pad stack">
+            <h3>Token Tools</h3>
+            <label>Player<select id="adminUser">${state.users.map(u => `<option value="${u.id}">${escapeHtml(u.name)}</option>`).join("")}</select></label>
+            <label>Amount<input id="adminAmount" type="number" min="0" value="1000"></label>
+            <div class="row"><button id="adminAdd" class="primary" type="button">Add</button><button id="adminSubtract" type="button">Subtract</button></div>
+            <h3>Give Blook</h3>
+            <label>Blook<select id="adminBlook">${packs.flatMap(p => p.blooks.map(b => `<option value="${escapeHtml(JSON.stringify({name:b.name,icon:b.icon,rarity:b.rarity,chance:b.chance,boosted:b.boosted}))}">${p.name}: ${b.name} (${b.rarity})</option>`)).join("")}</select></label>
+            <button id="adminGiveBlook" class="primary" type="button">Give blook</button>
+            <h3>Trade History</h3>
+            <div class="stack">${state.tradeHistory.slice(-8).reverse().map(t => `<div class="message small">${escapeHtml(t.summary)}</div>`).join("") || `<p class="muted">No completed trades.</p>`}</div>
+          </aside>
+        </div>
+      `;
+    }
+
+    function bindView(view, user) {
+      if (view === "market") bindMarket(user);
+      if (view === "inventory") bindInventory(user);
+      if (view === "bazaar") bindBazaar(user);
+      if (view === "chat") bindChat(user);
+      if (view === "trade") bindTrade(user);
+      if (view === "clans") bindClans(user);
+      if (view === "wheel") bindWheel(user);
+      if (view === "plus") bindPlus(user);
+      if (view === "admin") bindAdmin(user);
+      const chatLog = document.getElementById("chatLog");
+      if (chatLog) chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function bindMarket(user) {
+      document.querySelectorAll(".open-pack").forEach(btn => btn.onclick = () => openPacks(btn.dataset.pack, btn.dataset.count));
+      document.querySelectorAll(".buy-booster").forEach(btn => btn.onclick = () => {
+        const hours = Number(btn.dataset.hours);
+        const cost = Number(btn.dataset.cost);
+        if (!spendTokens(user, cost)) return toast("Not enough tokens for that booster.");
+        user.boosterUntil = Math.max(Date.now(), user.boosterUntil || 0) + hours * 3600000;
+        state.chats.push({
+          id: id(),
+          system: true,
+          text: `${user.name} activated a ${hours} hr Fruit Pack luck booster. Watermelon and rarer are boosted by 2x for them.`,
+          time: Date.now()
+        });
+        saveState();
+        toast(`${hours} hr booster activated.`);
+        render();
+      });
+    }
+
+    function openPacks(packId, requested) {
+      const user = currentUser();
+      const pack = packs.find(p => p.id === packId);
+      let count = requested === "max" ? Math.floor(user.tokens / 25) : Number(requested);
+      const limit = isPlus(user) ? Infinity : 1000;
+      count = Math.min(count, Math.floor(user.tokens / 25), limit);
+      if (!count) return toast("Not enough tokens to open that many packs.");
+      spendTokens(user, count * 25);
+      const results = [];
+      for (let i = 0; i < count; i++) {
+        const item = pickBlook(pack, user);
+        addBlook(user, item, pack.name);
+        results.push(item);
+      }
+      user.packOpens = (user.packOpens || 0) + count;
+      addXp(user, count * 4);
+      const clan = clanFor(user.id);
+      if (clan) clan.xp = (clan.xp || 0) + count * 4;
+      saveState();
+      showOpenModal(pack, results, count);
+      render();
+    }
+
+    function showOpenModal(pack, results, count) {
+      const best = results.reduce((a, b) => rarityValues[b.rarity] > rarityValues[a.rarity] ? b : a, results[0]);
+      const modal = document.getElementById("modal");
+      modal.innerHTML = `<div class="modal-inner">
+        <h3>Opening ${count} ${pack.name}${count > 1 ? "s" : ""}</h3>
+        <div class="opening-stage"><div id="openingPack" class="opening-pack" style="--c1:${pack.c1};--c2:${pack.c2}">${pack.icon}</div></div>
+        <div id="openResult" class="hidden stack">
+          ${blookCard(best, `<div class="small muted">Best pull from ${count} pack${count > 1 ? "s" : ""}</div>`)}
+          <div class="pillrow">${Object.entries(results.reduce((m, i) => (m[i.rarity] = (m[i.rarity] || 0) + 1, m), {})).map(([r,c]) => `<span class="pill rarity ${r}">${r}: ${c}</span>`).join("")}</div>
+          <button id="closeModal" class="primary" type="button">Done</button>
+        </div>
+      </div>`;
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        document.getElementById("openingPack")?.classList.add("reveal");
+        document.getElementById("openResult")?.classList.remove("hidden");
+      }, 1200);
+      setTimeout(() => document.getElementById("closeModal")?.addEventListener("click", () => modal.classList.add("hidden")), 50);
+    }
+
+    function bindInventory(user) {
+      document.querySelectorAll(".sell-one").forEach(btn => btn.onclick = () => {
+        const item = user.inventory.find(i => i.uid === btn.dataset.id);
+        if (!item) return;
+        user.inventory = user.inventory.filter(i => i.uid !== item.uid);
+        addTokens(user, rarityValues[item.rarity]);
+        saveState();
+        toast(`Sold ${item.name} for ${rarityValues[item.rarity]} tokens.`);
+        render();
+      });
+      document.querySelectorAll(".list-one").forEach(btn => btn.onclick = () => {
+        currentView = "bazaar";
+        render();
+        setTimeout(() => {
+          const select = document.getElementById("bazaarBlook");
+          if (select) select.value = btn.dataset.id;
+        }, 0);
+      });
+      document.getElementById("sellAll").onclick = () => {
+        const total = user.inventory.reduce((sum, item) => sum + rarityValues[item.rarity], 0);
+        user.inventory = [];
+        addTokens(user, total);
+        saveState();
+        toast(`Sold all blooks for ${money(total)} tokens.`);
+        render();
+      };
+      document.getElementById("sellDupes").onclick = () => {
+        const seen = new Set();
+        let total = 0;
+        user.inventory = user.inventory.filter(item => {
+          const key = item.name + item.rarity;
+          if (!seen.has(key)) { seen.add(key); return true; }
+          total += rarityValues[item.rarity];
+          return false;
+        });
+        addTokens(user, total);
+        saveState();
+        toast(`Sold duplicate blooks for ${money(total)} tokens.`);
+        render();
+      };
+    }
+
+    function bindBazaar(user) {
+      const create = document.getElementById("createListing");
+      if (create) create.onclick = () => {
+        const active = state.listings.filter(l => !l.sold && l.sellerId === user.id).length;
+        if (!isPlus(user) && active >= 25) return toast("Normal players can only list 25 items.");
+        const itemId = document.getElementById("bazaarBlook").value;
+        const price = Math.max(1, Number(document.getElementById("bazaarPrice").value || 0));
+        const item = user.inventory.find(i => i.uid === itemId);
+        if (!item) return toast("Pick a blook to list.");
+        user.inventory = user.inventory.filter(i => i.uid !== itemId);
+        state.listings.push({ id: id(), sellerId: user.id, item, price, sold: false, time: Date.now() });
+        saveState();
+        toast("Listing created.");
+        render();
+      };
+      document.querySelectorAll(".buy-listing").forEach(btn => btn.onclick = () => {
+        const listing = state.listings.find(l => l.id === btn.dataset.id && !l.sold);
+        if (!listing) return;
+        if (!spendTokens(user, listing.price)) return toast("Not enough tokens.");
+        const seller = userById(listing.sellerId);
+        if (seller) addTokens(seller, listing.price);
+        user.inventory.push(listing.item);
+        listing.sold = true;
+        saveState();
+        toast("Bought from the bazaar.");
+        render();
+      });
+      document.querySelectorAll(".cancel-listing").forEach(btn => btn.onclick = () => {
+        const listing = state.listings.find(l => l.id === btn.dataset.id && !l.sold);
+        if (!listing || listing.sellerId !== user.id) return;
+        user.inventory.push(listing.item);
+        listing.sold = true;
+        listing.cancelled = true;
+        saveState();
+        toast("Listing canceled.");
+        render();
+      });
+    }
+
+    function bindChat(user) {
+      const send = () => {
+        const input = document.getElementById("chatInput");
+        const text = input.value.trim();
+        if (!text || user.muted) return;
+        const reward = Math.floor(Math.random() * 5) + 1;
+        addTokens(user, reward);
+        user.messages = (user.messages || 0) + 1;
+        addXp(user, 8);
+        const clan = clanFor(user.id);
+        if (clan) clan.xp = (clan.xp || 0) + 8;
+        state.users.forEach(u => {
+          if (text.toLowerCase().includes("@" + u.name.toLowerCase())) {
+            u.pings = (u.pings || 0) + 1;
+            addXp(u, 5);
+          }
+        });
+        state.chats.push({ id: id(), userId: user.id, text, time: Date.now(), reward });
+        input.value = "";
+        saveState();
+        toast(`+${reward} tokens from chat.`);
+        render();
+      };
+      document.getElementById("sendChat").onclick = send;
+      document.getElementById("chatInput").onkeydown = event => { if (event.key === "Enter") send(); };
+    }
+
+    function bindTrade(user) {
+      document.getElementById("startTrade")?.addEventListener("click", () => {
+        const toId = document.getElementById("tradePlayer").value;
+        const tokens = Math.max(0, Number(document.getElementById("tradeTokens").value || 0));
+        const ids = Array.from(document.getElementById("tradeBlooks").selectedOptions).map(o => o.value).slice(0, 4);
+        if (!toId) return toast("Pick a player.");
+        if (tokens > user.tokens) return toast("Not enough tokens.");
+        const items = ids.map(uid => user.inventory.find(i => i.uid === uid)).filter(Boolean);
+        state.trades.push({ id: id(), fromId: user.id, toId, fromOffer: { tokens, items }, toOffer: { tokens: 0, items: [] }, status: "open", chat: [], time: Date.now() });
+        saveState();
+        toast("Trade sent.");
+        render();
+      });
+      document.querySelectorAll(".send-trade-chat").forEach(btn => btn.onclick = () => {
+        const input = document.querySelector(`.trade-chat[data-id="${btn.dataset.id}"]`);
+        const trade = state.trades.find(t => t.id === btn.dataset.id);
+        if (!input.value.trim() || !trade) return;
+        trade.chat.push({ userId: user.id, text: input.value.trim(), time: Date.now() });
+        saveState();
+        render();
+      });
+      document.querySelectorAll(".cancel-trade").forEach(btn => btn.onclick = () => {
+        const trade = state.trades.find(t => t.id === btn.dataset.id);
+        if (!trade) return;
+        trade.status = "cancelled";
+        saveState();
+        toast("Trade cancelled.");
+        render();
+      });
+      document.querySelectorAll(".save-counter").forEach(btn => btn.onclick = () => {
+        const trade = state.trades.find(t => t.id === btn.dataset.id && t.toId === user.id);
+        if (!trade) return;
+        const tokens = Math.max(0, Number(document.querySelector(`.counter-tokens[data-id="${btn.dataset.id}"]`).value || 0));
+        if (tokens > user.tokens) return toast("Not enough tokens.");
+        const ids = Array.from(document.querySelector(`.counter-blooks[data-id="${btn.dataset.id}"]`).selectedOptions).map(o => o.value).slice(0, 4);
+        trade.toOffer = { tokens, items: ids.map(uid => user.inventory.find(i => i.uid === uid)).filter(Boolean) };
+        saveState();
+        toast("Counter-offer saved.");
+        render();
+      });
+      document.querySelectorAll(".accept-trade").forEach(btn => btn.onclick = () => {
+        const trade = state.trades.find(t => t.id === btn.dataset.id && t.toId === user.id);
+        if (!trade) return;
+        const from = userById(trade.fromId);
+        const to = userById(trade.toId);
+        if (!from || !to) return;
+        if (from.tokens < trade.fromOffer.tokens || to.tokens < trade.toOffer.tokens) return toast("One side no longer has enough tokens.");
+        const fromIds = new Set(trade.fromOffer.items.map(i => i.uid));
+        const toIds = new Set(trade.toOffer.items.map(i => i.uid));
+        if (![...fromIds].every(uid => from.inventory.some(i => i.uid === uid))) return toast("Sender no longer owns every offered blook.");
+        if (![...toIds].every(uid => to.inventory.some(i => i.uid === uid))) return toast("Receiver no longer owns every counter-offered blook.");
+        from.tokens -= trade.fromOffer.tokens;
+        addTokens(to, trade.fromOffer.tokens);
+        to.tokens -= trade.toOffer.tokens;
+        addTokens(from, trade.toOffer.tokens);
+        from.inventory = from.inventory.filter(i => !fromIds.has(i.uid));
+        to.inventory = to.inventory.filter(i => !toIds.has(i.uid));
+        to.inventory.push(...trade.fromOffer.items);
+        from.inventory.push(...trade.toOffer.items);
+        trade.status = "completed";
+        state.tradeHistory.push({ id: id(), time: Date.now(), summary: `${from.name} traded ${trade.fromOffer.items.length} blooks and ${trade.fromOffer.tokens} tokens with ${to.name} for ${trade.toOffer.items.length} blooks and ${trade.toOffer.tokens} tokens.` });
+        saveState();
+        toast("Trade completed.");
+        render();
+      });
+    }
+
+    function bindClans(user) {
+      document.getElementById("createClan")?.addEventListener("click", () => {
+        if (clanFor(user.id)) return toast("Leave your current clan first in a future update.");
+        const name = document.getElementById("clanName").value.trim().slice(0, 18);
+        if (!name) return toast("Give your clan a name.");
+        state.clans.push({ id: id(), name, ownerId: user.id, members: [user.id], applications: [], paint: document.getElementById("clanPaint").value, xp: 0 });
+        saveState();
+        toast("Clan created.");
+        render();
+      });
+      document.querySelectorAll(".apply-clan").forEach(btn => btn.onclick = () => {
+        const clan = state.clans.find(c => c.id === btn.dataset.id);
+        if (!clan || clan.applications.includes(user.id)) return;
+        clan.applications.push(user.id);
+        saveState();
+        toast("Clan application sent.");
+        render();
+      });
+      document.querySelectorAll(".accept-clan").forEach(btn => btn.onclick = () => {
+        const clan = state.clans.find(c => c.id === btn.dataset.clan && c.ownerId === user.id);
+        if (!clan) return;
+        const applicant = btn.dataset.user;
+        if (!clan.members.includes(applicant)) clan.members.push(applicant);
+        clan.applications = clan.applications.filter(id => id !== applicant);
+        saveState();
+        render();
+      });
+      document.querySelectorAll(".clan-paint").forEach(select => select.onchange = () => {
+        const clan = state.clans.find(c => c.id === select.dataset.id && c.ownerId === user.id);
+        if (!clan) return;
+        clan.paint = select.value;
+        saveState();
+        render();
+      });
+      document.querySelectorAll(".do-transfer").forEach(btn => btn.onclick = () => {
+        const select = document.querySelector(`.transfer-clan[data-id="${btn.dataset.id}"]`);
+        const clan = state.clans.find(c => c.id === btn.dataset.id && c.ownerId === user.id);
+        if (!clan || !select.value) return;
+        clan.ownerId = select.value;
+        saveState();
+        toast("Clan ownership transferred.");
+        render();
+      });
+    }
+
+    function bindWheel(user) {
+      document.getElementById("spinWheel").onclick = () => {
+        if (user.lastWheel === todayKey()) return;
+        const index = Math.floor(Math.random() * wheelRewards.length);
+        const reward = wheelRewards[index];
+        const segment = 360 / wheelRewards.length;
+        const targetAngle = -(index * segment + segment / 2);
+        spinRotation += 360 * 5 + targetAngle - (spinRotation % 360);
+        document.getElementById("wheel").style.transform = `rotate(${spinRotation}deg)`;
+        document.getElementById("spinWheel").disabled = true;
+        setTimeout(() => {
+          addTokens(user, reward);
+          user.lastWheel = todayKey();
+          saveState();
+          document.getElementById("wheelResult").textContent = `Landed on ${money(reward)} and awarded ${money(reward)} tokens.`;
+          toast(`Daily wheel: +${money(reward)} tokens.`);
+          renderUserBox(user);
+          renderQuickStats(user);
+        }, 3300);
+      };
+    }
+
+    function bindPlus(user) {
+      document.getElementById("buyPlus")?.addEventListener("click", () => {
+        if (!spendTokens(user, 100000)) return toast("Not enough tokens for Plus.");
+        user.plus = true;
+        user.badge = "PLUS";
+        addBlook(user, { name: "Plus Prism", icon: "💠", rarity: "chroma" }, "Plus");
+        saveState();
+        toast("Plus unlocked.");
+        render();
+      });
+      document.getElementById("saveProfile")?.addEventListener("click", () => {
+        user.name = document.getElementById("profileName").value.trim().slice(0, 18) || user.name;
+        user.textColor = document.getElementById("profileTextColor").value;
+        user.nameColor = document.getElementById("profileNameColor").value;
+        saveState();
+        toast("Profile saved.");
+        render();
+      });
+    }
+
+    function bindAdmin(user) {
+      document.querySelectorAll(".toggle-mute").forEach(btn => btn.onclick = () => {
+        const target = userById(btn.dataset.id);
+        target.muted = !target.muted;
+        saveState();
+        render();
+      });
+      document.querySelectorAll(".toggle-ban").forEach(btn => btn.onclick = () => {
+        const target = userById(btn.dataset.id);
+        target.banned = !target.banned;
+        saveState();
+        render();
+      });
+      document.querySelectorAll(".toggle-plus").forEach(btn => btn.onclick = () => {
+        const target = userById(btn.dataset.id);
+        target.plus = !target.plus;
+        if (target.plus) target.badge = "PLUS";
+        saveState();
+        render();
+      });
+      document.querySelectorAll(".toggle-admin").forEach(btn => btn.onclick = () => {
+        const target = userById(btn.dataset.id);
+        target.admin = !target.admin;
+        if (target.admin) target.plus = true;
+        saveState();
+        render();
+      });
+      document.getElementById("adminAdd").onclick = () => {
+        const target = userById(document.getElementById("adminUser").value);
+        const amount = Math.max(0, Number(document.getElementById("adminAmount").value || 0));
+        addTokens(target, amount);
+        saveState();
+        render();
+      };
+      document.getElementById("adminSubtract").onclick = () => {
+        const target = userById(document.getElementById("adminUser").value);
+        const amount = Math.max(0, Number(document.getElementById("adminAmount").value || 0));
+        target.tokens = Math.max(0, target.tokens - amount);
+        saveState();
+        render();
+      };
+      document.getElementById("adminGiveBlook").onclick = () => {
+        const target = userById(document.getElementById("adminUser").value);
+        const item = JSON.parse(document.getElementById("adminBlook").value);
+        addBlook(target, item, "Admin");
+        saveState();
+        toast("Blook granted.");
+        render();
+      };
+    }
+
+    document.getElementById("loginMode").onclick = () => {
+      authMode = "login";
+      document.getElementById("loginMode").classList.add("primary");
+      document.getElementById("registerMode").classList.remove("primary");
+      document.getElementById("nameLabel").classList.add("hidden");
+      document.getElementById("authSubmit").textContent = "Enter Packlet";
+    };
+
+    document.getElementById("registerMode").onclick = () => {
+      authMode = "register";
+      document.getElementById("registerMode").classList.add("primary");
+      document.getElementById("loginMode").classList.remove("primary");
+      document.getElementById("nameLabel").classList.remove("hidden");
+      document.getElementById("authSubmit").textContent = "Create Account";
+    };
+
+    document.getElementById("authSubmit").onclick = () => {
+      const email = document.getElementById("emailInput").value.trim().toLowerCase();
+      const password = document.getElementById("passwordInput").value;
+      if (!email || !password) return toast("Email and password are required.");
+      if (authMode === "register") {
+        if (state.users.some(u => u.email === email)) return toast("That email already has an account.");
+        const name = document.getElementById("nameInput").value.trim().slice(0, 18) || email.split("@")[0];
+        state.users.push({ id: id(), email, password, name, tokens: 5000, totalTokens: 5000, messages: 0, packOpens: 0, pings: 0, xp: 0, muted: false, banned: false, plus: false, admin: false, badge: "", nameColor: "#eef4ff", textColor: "#eef4ff", paint: "", inventory: [], boosterUntil: 0, lastWheel: "" });
+        saveState();
+      }
+      const user = state.users.find(u => u.email === email && u.password === password);
+      if (!user) return toast("Login did not match.");
+      sessionEmail = email;
+      localStorage.setItem("packlet_session_email", email);
+      render();
+    };
+
+    saveState(false);
+    render();
+    loadRemoteState();
+  </script>
+</body>
+</html>
